@@ -116,6 +116,8 @@ app.get("/boxes", async (req, res) => {
   }
 });
 
+
+
 // GET request for getting box by id
 app.get("/box/:id", async (req, res) => {
   try {
