@@ -7,6 +7,7 @@ const http = require("http");
 const {config} = require("dotenv");
 const {v4: uuidv4} = require("uuid");
 const QRCode = require("qrcode");
+config();
 
 // Initialize app and body parser middleware
 const app = express();
@@ -21,8 +22,6 @@ app.use(
     origin: "*",
   })
 );
-
-config();
 
 // Connect to MongoDB
 mongoose
@@ -68,7 +67,7 @@ app.post("/createbox", async (req, res) => {
 
     let QRbase64 = await new Promise((resolve, reject) => {
       QRCode.toDataURL(
-        `${process.env.FRONTEND_URL}/${newJeans._id}`,
+        `${process.env.FRONTEND_URL}/#/box/details/${newJeans._id}`,
         function (err, code) {
           if (err) {
             reject(reject);
