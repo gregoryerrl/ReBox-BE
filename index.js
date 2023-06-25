@@ -6,6 +6,7 @@ const cors = require("cors");
 const http = require("http");
 const {config} = require("dotenv");
 const {v4: uuidv4} = require("uuid");
+const QRCode = require("qrcode");
 
 // Initialize app and body parser middleware
 const app = express();
@@ -41,6 +42,7 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model("User", userSchema);
 
 const boxSchema = new mongoose.Schema({
+  qrb64: String,
   label: String,
   content: String,
   manufacturer: String,
@@ -60,8 +62,24 @@ app.post("/createbox", async (req, res) => {
       manufacturer: req.body.manufacturer,
       details: req.body.details,
       empty: req.body.empty,
+      qrb64: "",
     });
-    await newBox.save();
+    const newJeans = await newBox.save();
+
+    let QRbase64 = await new Promise((resolve, reject) => {
+      QRCode.toDataURL(
+        `${process.env.FRONTEND_URL}/${newJeans._id}`,
+        function (err, code) {
+          if (err) {
+            reject(reject);
+            return;
+          }
+          resolve(code);
+        }
+      );
+    });
+
+    await Box.findByIdAndUpdate(newJeans._id, {qrb64: QRbase64}, {new: true});
     res.status(201).json({message: "Box created successfully"});
   } catch (err) {
     res.status(500).json({error: err.message});
@@ -159,6 +177,26 @@ app.put("/box/:id", async (req, res) => {
     };
     const box = await Box.findByIdAndUpdate(id, payload, {new: true});
     res.status(200).json({box});
+  } catch (err) {
+    res.status(500).json({error: err.message});
+  }
+});
+
+//GET request for getting empty boxes count
+app.get("/boxes/empty/count", async (req, res) => {
+  try {
+    const boxes = await Box.find({empty: true});
+    res.status(200).json({count: boxes.length});
+  } catch (err) {
+    res.status(500).json({error: err.message});
+  }
+});
+
+//GET request for getting non-empty boxes count
+app.get("/boxes/nonempty/count", async (req, res) => {
+  try {
+    const boxes = await Box.find({empty: false});
+    res.status(200).json({count: boxes.length});
   } catch (err) {
     res.status(500).json({error: err.message});
   }
