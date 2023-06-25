@@ -157,7 +157,7 @@ app.put("/box/:id", async (req, res) => {
       details: req.body.details,
       empty: req.body.empty,
     };
-    const box = await Box.findByIdAndUpdate({_id: id}, {payload});
+    const box = await Box.findByIdAndUpdate(id, payload, {new: true});
     res.status(200).json({box});
   } catch (err) {
     res.status(500).json({error: err.message});
