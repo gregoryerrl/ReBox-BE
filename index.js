@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const cors = require("cors");
 const http = require("http");
-const { config } = require('dotenv');
+const {config} = require("dotenv");
 const {v4: uuidv4} = require("uuid");
 
 // Initialize app and body parser middleware
@@ -14,7 +14,6 @@ const server = http.createServer(app);
 // Increase the limit of the request payload to 50MB
 app.use(bodyParser.json({limit: "50mb"}));
 app.use(bodyParser.urlencoded({limit: "50mb", extended: true}));
-
 
 app.use(
   cors({
@@ -26,17 +25,12 @@ config();
 
 // Connect to MongoDB
 mongoose
-  .connect(
-    process.env.MONGO_URL,
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  )
+  .connect(process.env.MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log(err));
-
-
 
 const userSchema = new mongoose.Schema({
   username: {type: String, unique: true},
@@ -51,6 +45,7 @@ const boxSchema = new mongoose.Schema({
   content: String,
   manufacturer: String,
   details: String,
+  empty: Boolean,
 });
 
 // Define User model
@@ -64,6 +59,7 @@ app.post("/createbox", async (req, res) => {
       content: req.body.content,
       manufacturer: req.body.manufacturer,
       details: req.body.details,
+      empty: req.body.empty,
     });
     await newBox.save();
     res.status(201).json({message: "Box created successfully"});
@@ -116,8 +112,6 @@ app.get("/boxes", async (req, res) => {
   }
 });
 
-
-
 // GET request for getting box by id
 app.get("/box/:id", async (req, res) => {
   try {
@@ -146,6 +140,23 @@ app.delete("/box/:id", async (req, res) => {
   try {
     const id = req.params.id;
     const box = await Box.findByIdAndDelete({_id: id});
+    res.status(200).json({box});
+  } catch (err) {
+    res.status(500).json({error: err.message});
+  }
+});
+
+//PUT request for updating box by id
+app.put("/box/:id", async (req, res) => {
+  try {
+    const payload = {
+      label: req.body.label,
+      content: req.body.content,
+      manufacturer: req.body.manufacturer,
+      details: req.body.details,
+      empty: req.body.empty,
+    };
+    const box = await Box.findByIdAndUpdate({_id: id}, {payload});
     res.status(200).json({box});
   } catch (err) {
     res.status(500).json({error: err.message});
