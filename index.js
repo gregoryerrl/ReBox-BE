@@ -40,8 +40,30 @@ const userSchema = new mongoose.Schema({
 // Define User model
 const User = mongoose.model("User", userSchema);
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
+const boxSchema = new mongoose.Schema({
+  label: String,
+  content: String,
+  manufacturer: String,
+  details: String,
+});
+
+// Define User model
+const Box = mongoose.model("Box", boxSchema);
+
+// POST request for registering new box
+app.post("/createbox", async (req, res) => {
+  try {
+    const newBox = new Box({
+      label: req.body.label,
+      content: req.body.content,
+      manufacturer: req.body.manufacturer,
+      details: req.body.details,
+    });
+    await newBox.save();
+    res.status(201).json({message: "Box created successfully"});
+  } catch (err) {
+    res.status(500).json({error: err.message});
+  }
 });
 
 // POST request for registering new user
@@ -75,6 +97,50 @@ app.post("/login", async (req, res) => {
     });
   } catch (err) {
     res.status(401).json({success: false, error: err.message});
+  }
+});
+
+// GET request for getting all boxes
+app.get("/boxes", async (req, res) => {
+  try {
+    const boxes = await Box.find({});
+    res.status(200).json({boxes});
+  } catch (err) {
+    res.status(500).json({error: err.message});
+  }
+});
+
+// GET request for getting box by id
+app.get("/box/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    // res.status(200).json({id});
+    const box = await Box.findById({_id: id});
+    res.status(200).json({box});
+  } catch (err) {
+    res.status(500).json({error: err.message});
+  }
+});
+
+// GET request for getting number of boxes
+app.get("/boxes/count", async (req, res) => {
+  try {
+    const boxes = await Box.find({});
+    res.status(200).json({count: boxes.length});
+  } catch (err) {
+    res.status(500).json({error: err.message});
+  }
+});
+
+//DELETE request for deleting box by id
+
+app.delete("/box/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const box = await Box.findByIdAndDelete({_id: id});
+    res.status(200).json({box});
+  } catch (err) {
+    res.status(500).json({error: err.message});
   }
 });
 
