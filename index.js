@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const cors = require("cors");
 const http = require("http");
+const { config } = require('dotenv');
 const {v4: uuidv4} = require("uuid");
 
 // Initialize app and body parser middleware
@@ -14,10 +15,19 @@ const server = http.createServer(app);
 app.use(bodyParser.json({limit: "50mb"}));
 app.use(bodyParser.urlencoded({limit: "50mb", extended: true}));
 
+
+app.use(
+  cors({
+    origin: "*",
+  })
+);
+
+config();
+
 // Connect to MongoDB
 mongoose
   .connect(
-    "mongodb+srv://reboxdb:NRAWHelHFXCmxkud@reboxdb.29gku9y.mongodb.net/test",
+    process.env.MONGO_URL,
     {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -26,11 +36,7 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log(err));
 
-app.use(
-  cors({
-    origin: "*",
-  })
-);
+
 
 const userSchema = new mongoose.Schema({
   username: {type: String, unique: true},
@@ -144,4 +150,6 @@ app.delete("/box/:id", async (req, res) => {
   }
 });
 
-server.listen(3000, () => console.log("Server started on port 3000"));
+const port = process.env.PORT || 3000;
+
+server.listen(port, () => console.log(`Server started on port ${port}`));
