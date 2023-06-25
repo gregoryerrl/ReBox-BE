@@ -149,6 +149,7 @@ app.delete("/box/:id", async (req, res) => {
 //PUT request for updating box by id
 app.put("/box/:id", async (req, res) => {
   try {
+    const id = req.params.id;
     const payload = {
       label: req.body.label,
       content: req.body.content,
