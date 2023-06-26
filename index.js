@@ -65,18 +65,20 @@ app.post("/createbox", async (req, res) => {
     });
     const newJeans = await newBox.save();
 
-    let QRbase64 = await new Promise((resolve, reject) => {
-      QRCode.toDataURL(
-        `${process.env.FRONTEND_URL}/#/box/details/${newJeans._id}`,
-        function (err, code) {
-          if (err) {
-            reject(reject);
-            return;
+    if (newJeans._id) {
+      let QRbase64 = await new Promise((resolve, reject) => {
+        QRCode.toDataURL(
+          `${process.env.FRONTEND_URL}/#/box/details/${newJeans._id}`,
+          function (err, code) {
+            if (err) {
+              reject(reject);
+              return;
+            }
+            resolve(code);
           }
-          resolve(code);
-        }
-      );
-    });
+        );
+      });
+    }
 
     await Box.findByIdAndUpdate(newJeans._id, {qrb64: QRbase64}, {new: true});
     res.status(201).json({message: "Box created successfully"});
