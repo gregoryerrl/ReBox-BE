@@ -54,6 +54,8 @@ const Box = mongoose.model("Box", boxSchema);
 
 // POST request for registering new box
 app.post("/createbox", async (req, res) => {
+  console.log(req.body);
+  console.log(`${process.env.FRONTEND_URL}`);
   try {
     const newBox = new Box({
       label: req.body.label,
